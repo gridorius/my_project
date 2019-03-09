@@ -2,24 +2,28 @@
 
 namespace Modules\PageView;
 
-use mysql_xdevapi\Exception;
-
-class PageView extends BasePageView
+class PageView extends PartialView
 {
+    protected static $sections = [];
 
-    public function send($data)
+    public static function addSection($name, $output){
+        static::$sections[$name] = $output;
+    }
+
+    public static function showSection($name){
+        static::$sections[$name]();
+    }
+
+    public function send()
     {
-        foreach ($data as $key => $val)
-            ${$key} = $val;
+        ob_start();
+        parent::send();
+        $content = ob_get_contents();
+        ob_clean();
 
-        if (is_file($this->cachePath)) {
-            if ($this->is_updated())
-                $this->cache();
-        } else if (is_file($this->templatePath)) {
-            $this->cache();
-        } else
-            throw new Exception("Template {$this->templatePath} not found");
+        $this->data['_page_content'] = $content;
 
-        include_once($this->cachePath);
+        $layout = new PartialView(static::$layout);
+        $layout->assign($this->data)->send();
     }
 }
