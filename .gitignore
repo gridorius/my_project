@@ -1,2 +1,5 @@
 .idea/*
 index.php
+Views/*
+Controllers/*
+Models/*
